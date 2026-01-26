@@ -1,7 +1,7 @@
 ---
 name: Sprint-Backlog-Template
 about: 스프린트 백로그 템플릿
-title: '[AI/BE/FE/CL] '
+title: '[CL] '
 
 labels: 스프린트-백로그
 assignees: ''
