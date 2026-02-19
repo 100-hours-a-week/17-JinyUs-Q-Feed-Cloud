@@ -1,0 +1,12 @@
+# terraform.tfvars.example
+# 실제 사용 시 terraform.tfvars로 복사 후 값을 채워주세요.
+# cp terraform.tfvars.example terraform.tfvars
+
+allowed_ips = [
+  "xxx.xxx.xxx.xxx/32", # 팀원1
+  "xxx.xxx.xxx.xxx/32", # 팀원2
+]
+
+db_username = "your-db-username"
+
+alert_email = "your-email@example.com"
