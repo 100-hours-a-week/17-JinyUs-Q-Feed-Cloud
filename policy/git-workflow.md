@@ -163,6 +163,7 @@ feat: RDS PostgreSQL 및 DB Subnet Group 추가
 
 ### 5.2 Terraform 변경 시
 
+- `terraform apply`는 **main 브랜치에서만** 실행한다 (PR merge 후)
 - PR에 `terraform plan` 출력 요약을 남긴다
 - **destroy가 포함된 변경**은 PR 본문에 명시하고 리뷰어에게 알린다
 - 네트워크, RDS 등 핵심 인프라 변경은 팀 전체 공유 후 진행
