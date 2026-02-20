@@ -23,3 +23,8 @@ data "aws_ssm_parameter" "db_password" {
 data "aws_ec2_managed_prefix_list" "cloudfront" {
   name = "com.amazonaws.global.cloudfront.origin-facing"
 }
+
+# OIDC Provider (CLI로 생성 완료, data source로 참조)
+data "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
+}
