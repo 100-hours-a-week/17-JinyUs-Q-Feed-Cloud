@@ -1,0 +1,43 @@
+services:
+  backend:
+    image: ${ECR_REGISTRY}/qfeed-ecr-backend:${IMAGE_TAG}
+    network_mode: host
+    environment:
+      - AWS_PARAMETER_STORE_PATH=/qfeed/dev/be
+      - AWS_REGION=ap-northeast-2
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:8-alpine
+    network_mode: host
+    command: redis-server --requirepass ${REDIS_PASSWORD} --bind 127.0.0.1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - redis-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  redis-data:
