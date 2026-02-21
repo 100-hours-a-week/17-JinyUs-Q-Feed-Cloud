@@ -45,6 +45,14 @@ resource "aws_security_group" "backend" {
   }
 
   ingress {
+    description     = "Actuator health check from ALB"
+    from_port       = 8081
+    to_port         = 8081
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
     description = "SSH from team IPs"
     from_port   = 22
     to_port     = 22

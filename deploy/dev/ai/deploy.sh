@@ -27,9 +27,7 @@ GEMINI_API_KEY=$(get_ssm "gemini-api-key")
 ELEVENLABS_API_KEY=$(get_ssm "elevenlabs-api-key")
 LANGCHAIN_API_KEY=$(get_ssm "langchain-api-key")
 AWS_S3_AUDIO_BUCKET=$(get_ssm "aws-s3-audio-bucket")
-# TODO: SSM 등록 후 주석 해제
-# VLLM_BASE_URL=$(get_ssm "vllm-base-url")
-# VLLM_MODEL_ID=$(get_ssm "vllm-model-id")
+GPU_LLM_URL=$(get_ssm "gpu-llm-url")
 
 # --- ECR 로그인 ---
 aws ecr get-login-password --region "$AWS_REGION" \
@@ -52,14 +50,13 @@ docker run -d \
   --log-opt max-file=3 \
   -e ENVIRONMENT=dev \
   -e AWS_REGION="$AWS_REGION" \
+  -e AWS_PARAMETER_STORE_PATH="$SSM_PREFIX" \
   -e HUGGINGFACE_API_KEY="$HUGGINGFACE_API_KEY" \
   -e GEMINI_API_KEY="$GEMINI_API_KEY" \
   -e ELEVENLABS_API_KEY="$ELEVENLABS_API_KEY" \
   -e LANGCHAIN_API_KEY="$LANGCHAIN_API_KEY" \
   -e AWS_S3_AUDIO_BUCKET="$AWS_S3_AUDIO_BUCKET" \
-  # TODO: SSM 등록 후 주석 해제
-  # -e VLLM_BASE_URL="$VLLM_BASE_URL" \
-  # -e VLLM_MODEL_ID="$VLLM_MODEL_ID" \
+  -e GPU_LLM_URL="$GPU_LLM_URL" \
   "${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
 
 # --- 이전 이미지 정리 ---

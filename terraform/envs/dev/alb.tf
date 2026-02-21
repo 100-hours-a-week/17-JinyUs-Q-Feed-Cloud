@@ -31,7 +31,7 @@ resource "aws_lb_target_group" "backend" {
   health_check {
     enabled             = true
     path                = "/actuator/health"
-    port                = "traffic-port"
+    port                = "8081"
     protocol            = "HTTP"
     healthy_threshold   = 2
     unhealthy_threshold = 3
