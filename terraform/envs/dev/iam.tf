@@ -352,6 +352,7 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage",
           "ecr:BatchCheckLayerAvailability",
+          "ecr:DescribeImages",
           "ecr:CompleteLayerUpload",
           "ecr:InitiateLayerUpload",
           "ecr:PutImage",
@@ -394,8 +395,11 @@ resource "aws_iam_role_policy" "github_actions_ssm_send_command" {
         }
       },
       {
-        Effect   = "Allow"
-        Action   = "ssm:GetCommandInvocation"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommandInvocations"
+        ]
         Resource = "*"
       }
     ]
