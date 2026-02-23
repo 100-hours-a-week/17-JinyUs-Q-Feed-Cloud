@@ -2,9 +2,7 @@ services:
   backend:
     image: ${ECR_REGISTRY}/qfeed-ecr-backend:${IMAGE_TAG}
     network_mode: host
-    environment:
-      - AWS_PARAMETER_STORE_PATH=/qfeed/dev/be
-      - AWS_REGION=ap-northeast-2
+    env_file: .env
     restart: unless-stopped
     depends_on:
       redis:
