@@ -22,12 +22,14 @@ get_ssm() {
     --output text
 }
 
+GPU_STT_URL=$(get_ssm "gpu-stt-url")
+GPU_LLM_URL=$(get_ssm "gpu-llm-url")
 HUGGINGFACE_API_KEY=$(get_ssm "huggingface-api-key")
 GEMINI_API_KEY=$(get_ssm "gemini-api-key")
 ELEVENLABS_API_KEY=$(get_ssm "elevenlabs-api-key")
-LANGCHAIN_API_KEY=$(get_ssm "langchain-api-key")
-AWS_S3_AUDIO_BUCKET=$(get_ssm "aws-s3-audio-bucket")
-GPU_LLM_URL=$(get_ssm "gpu-llm-url")
+LANGFUSE_SECRET_KEY=$(get_ssm "langfuse-secret-key")
+LANGFUSE_PUBLIC_KEY=$(get_ssm "langfuse-public-key")
+LANGFUSE_BASE_URL=$(get_ssm "langfuse-base-url")
 
 # --- ECR 로그인 ---
 aws ecr get-login-password --region "$AWS_REGION" \
@@ -40,6 +42,22 @@ docker pull "${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
 docker stop "$CONTAINER_NAME" 2>/dev/null || true
 docker rm "$CONTAINER_NAME" 2>/dev/null || true
 
+# .env 파일로 주입 후 배포 후 삭제
+ENV_FILE=$(mktemp)
+chmod 600 "$ENV_FILE"
+cat > "$ENV_FILE" << EOF
+ENVIRONMENT=dev
+AWS_REGION=${AWS_REGION}
+HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+GEMINI_API_KEY=${GEMINI_API_KEY}
+ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+GPU_STT_URL=${GPU_STT_URL}
+GPU_LLM_URL=${GPU_LLM_URL}
+LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL}
+EOF
+
 # --- 배포 ---
 docker run -d \
   --name "$CONTAINER_NAME" \
@@ -48,16 +66,11 @@ docker run -d \
   --log-driver json-file \
   --log-opt max-size=10m \
   --log-opt max-file=3 \
-  -e ENVIRONMENT=dev \
-  -e AWS_REGION="$AWS_REGION" \
-  -e AWS_PARAMETER_STORE_PATH="$SSM_PREFIX" \
-  -e HUGGINGFACE_API_KEY="$HUGGINGFACE_API_KEY" \
-  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
-  -e ELEVENLABS_API_KEY="$ELEVENLABS_API_KEY" \
-  -e LANGCHAIN_API_KEY="$LANGCHAIN_API_KEY" \
-  -e AWS_S3_AUDIO_BUCKET="$AWS_S3_AUDIO_BUCKET" \
-  -e GPU_LLM_URL="$GPU_LLM_URL" \
+  --env-file "$ENV_FILE" \
   "${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
+
+# 배포 후 즉시 삭제
+rm -f "$ENV_FILE"
 
 # --- 이전 이미지 정리 ---
 docker image prune -f
@@ -70,7 +83,8 @@ docker ps --filter "name=$CONTAINER_NAME"
 echo "헬스체크 대기 중 (최대 60초)..."
 for i in $(seq 1 6); do
   sleep 10
-  if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
+  RESTART_COUNT=$(docker inspect "$CONTAINER_NAME" --format '{{.RestartCount}}')
+  if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME" && [ "$RESTART_COUNT" = "0" ]; then
     echo "✅ AI 컨테이너가 정상적으로 실행 중입니다."
     exit 0
   fi
