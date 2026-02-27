@@ -73,7 +73,14 @@ docker run -d \
 rm -f "$ENV_FILE"
 
 # --- 이전 이미지 정리 ---
+# 현재 배포 태그를 제외한 이전 버전 이미지 삭제
+docker images "${ECR_REGISTRY}/qfeed-ecr-ai" --format '{{.Tag}}' \
+  | grep -v "^${IMAGE_TAG}$" \
+  | xargs -I{} docker rmi "${ECR_REGISTRY}/qfeed-ecr-ai:{}" 2>/dev/null || true
+
+# dangling 이미지(태그 없는 이미지)도 추가 정리
 docker image prune -f
+
 
 # --- 결과 확인 ---
 echo "배포 완료: ${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
