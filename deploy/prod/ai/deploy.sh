@@ -6,7 +6,7 @@ trap 'echo "ERROR: 배포 실패 (line $LINENO)" >&2' ERR
 AWS_REGION="ap-northeast-2"
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-CONTAINER_NAME="qfeed-ai-prod"
+CONTAINER_NAME="qfeed-ai"
 SSM_PREFIX="/qfeed/prod/ai"
 
 # --- 인자 확인 ---
@@ -22,11 +22,7 @@ get_ssm() {
     --output text
 }
 
-HUGGINGFACE_API_KEY=$(get_ssm "huggingface-api-key")
-GEMINI_API_KEY=$(get_ssm "gemini-api-key")
-ELEVENLABS_API_KEY=$(get_ssm "elevenlabs-api-key")
-LANGCHAIN_API_KEY=$(get_ssm "langchain-api-key")
-AWS_S3_AUDIO_BUCKET=$(get_ssm "aws-s3-audio-bucket")
+GPU_STT_URL=$(get_ssm "gpu-stt-url")
 GPU_LLM_URL=$(get_ssm "gpu-llm-url")
 
 # --- ECR 로그인 ---
@@ -51,16 +47,17 @@ docker run -d \
   -e ENVIRONMENT=prod \
   -e AWS_REGION="$AWS_REGION" \
   -e AWS_PARAMETER_STORE_PATH="$SSM_PREFIX" \
-  -e HUGGINGFACE_API_KEY="$HUGGINGFACE_API_KEY" \
-  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
-  -e ELEVENLABS_API_KEY="$ELEVENLABS_API_KEY" \
-  -e LANGCHAIN_API_KEY="$LANGCHAIN_API_KEY" \
-  -e AWS_S3_AUDIO_BUCKET="$AWS_S3_AUDIO_BUCKET" \
+  -e GPU_STT_URL="$GPU_STT_URL" \
   -e GPU_LLM_URL="$GPU_LLM_URL" \
   "${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
 
 # --- 이전 이미지 정리 ---
+# 현재 배포 태그를 제외한 이전 버전 이미지 삭제
+docker images "${ECR_REGISTRY}/qfeed-ecr-ai" --format '{{.Tag}}' \
+  | grep -v "^${IMAGE_TAG}$" \
+  | xargs -I{} docker rmi "${ECR_REGISTRY}/qfeed-ecr-ai:{}" 2>/dev/null || true
 docker image prune -f
+
 
 # --- 결과 확인 ---
 echo "배포 완료: ${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
@@ -70,13 +67,13 @@ docker ps --filter "name=$CONTAINER_NAME"
 echo "헬스체크 대기 중 (최대 60초)..."
 for i in $(seq 1 6); do
   sleep 10
-  if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
-    echo "✅ AI(prod) 컨테이너가 정상적으로 실행 중입니다."
+  RESTART_COUNT=$(docker inspect "$CONTAINER_NAME" --format '{{.RestartCount}}')
+  if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME" && [ "$RESTART_COUNT" = "0" ]; then
+    echo "✅ AI 컨테이너가 정상적으로 실행 중입니다."
     exit 0
   fi
   echo "  ... 대기 중 (${i}0초 경과)"
 done
-echo "❌ AI(prod) 컨테이너 실행 실패 (60초 타임아웃)" >&2
+echo "❌ AI 컨테이너 실행 실패 (60초 타임아웃)" >&2
 docker logs "$CONTAINER_NAME" --tail 50
 exit 1
-
