@@ -40,6 +40,7 @@ docker rm "$CONTAINER_NAME" 2>/dev/null || true
 LOG_DIR="/var/log/qfeed/ai"
 if [ ! -d "$LOG_DIR" ] || [ ! -w "$LOG_DIR" ]; then
   sudo mkdir -p "$LOG_DIR"
+  sudo chown 1000:101 "$LOG_DIR"
   sudo chmod 755 /var/log/qfeed "$LOG_DIR"
 fi
 
