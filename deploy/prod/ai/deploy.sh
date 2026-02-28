@@ -36,6 +36,13 @@ docker pull "${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
 docker stop "$CONTAINER_NAME" 2>/dev/null || true
 docker rm "$CONTAINER_NAME" 2>/dev/null || true
 
+# --- 로그 디렉토리 생성 (없거나 권한 없을 때만) ---
+LOG_DIR="/var/log/qfeed/ai"
+if [ ! -d "$LOG_DIR" ] || [ ! -w "$LOG_DIR" ]; then
+  sudo mkdir -p "$LOG_DIR"
+  sudo chmod 755 /var/log/qfeed "$LOG_DIR"
+fi
+
 # --- 배포 ---
 docker run -d \
   --name "$CONTAINER_NAME" \
@@ -44,6 +51,7 @@ docker run -d \
   --log-driver json-file \
   --log-opt max-size=10m \
   --log-opt max-file=3 \
+  -v /var/log/qfeed/ai:/var/log/qfeed/ai \
   -e ENVIRONMENT=prod \
   -e AWS_REGION="$AWS_REGION" \
   -e AWS_PARAMETER_STORE_PATH="$SSM_PREFIX" \
