@@ -9,6 +9,7 @@ ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 COMPOSE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SSM_PREFIX="/qfeed/prod/be"
 ENV_FILE="${COMPOSE_DIR}/.env"
+DEPLOY_ENV="prod"
 
 # --- 인자 확인 ---
 IMAGE_TAG="${1:?IMAGE_TAG가 필요합니다 (예: ./deploy.sh abc123)}"
