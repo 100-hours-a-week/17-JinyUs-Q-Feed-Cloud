@@ -115,6 +115,9 @@ docker compose -f "$COMPOSE_DIR/docker-compose.yml" pull
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" up -d
 
 # --- 이전 이미지 정리 ---
+docker images "${ECR_REGISTRY}/qfeed-ecr-backend" --format '{{.Tag}}' \
+  | grep -v "^${IMAGE_TAG}$" \
+  | xargs -I{} docker rmi "${ECR_REGISTRY}/qfeed-ecr-backend:{}" 2>/dev/null || true
 docker image prune -f
 
 # --- .env 파일 삭제 (보안) ---
