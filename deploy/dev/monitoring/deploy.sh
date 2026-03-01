@@ -18,7 +18,8 @@ get_ssm() {
 }
 
 echo "SSM 파라미터 조회 중..."
-export GF_ADMIN_PASSWORD=$(get_ssm "GF_ADMIN_PASSWORD")
+GF_ADMIN_PASSWORD=$(get_ssm "GF_ADMIN_PASSWORD")
+export GF_ADMIN_PASSWORD
 echo "SSM 파라미터 조회 완료 (1개)"
 
 # --- 배포 ---
@@ -33,20 +34,28 @@ echo "배포 완료"
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps
 
 # --- 헬스체크 ---
-SERVICES=("prometheus" "loki" "grafana" "alloy")
+# Prometheus/Grafana: Docker 헬스체크 (컨테이너 내부 wget)
+# Loki/Alloy: 호스트에서 curl (distroless 이미지라 컨테이너 내부 도구 없음)
 echo "헬스체크 대기 중 (최대 120초)..."
+
+check_docker_healthy() {
+  docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps "$1" | grep -q "healthy"
+}
+
+check_http_ready() {
+  curl -sf "$1" > /dev/null 2>&1
+}
 
 for i in $(seq 1 12); do
   sleep 10
-  ALL_HEALTHY=true
-  for svc in "${SERVICES[@]}"; do
-    if ! docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps "$svc" | grep -q "healthy"; then
-      ALL_HEALTHY=false
-      break
-    fi
-  done
+  ALL_OK=true
 
-  if $ALL_HEALTHY; then
+  check_docker_healthy "prometheus" || ALL_OK=false
+  check_docker_healthy "grafana"    || ALL_OK=false
+  check_http_ready "http://localhost:3100/ready"  || ALL_OK=false
+  check_http_ready "http://localhost:12345/-/ready" || ALL_OK=false
+
+  if $ALL_OK; then
     echo "모든 서비스가 정상적으로 실행 중입니다."
     exit 0
   fi
@@ -54,6 +63,7 @@ for i in $(seq 1 12); do
 done
 
 echo "헬스체크 실패 (120초 타임아웃)" >&2
+SERVICES=("prometheus" "loki" "grafana" "alloy")
 for svc in "${SERVICES[@]}"; do
   echo "=== ${svc} logs ==="
   docker compose -f "$COMPOSE_DIR/docker-compose.yml" logs --tail 20 "$svc"
