@@ -1,0 +1,8 @@
+// ==========================================================================
+// Monitoring EC2 Alloy Configuration
+// ==========================================================================
+
+prometheus.exporter.unix "host" {
+	procfs_path = "/host/proc"
+	sysfs_path  = "/host/sys"
+}
