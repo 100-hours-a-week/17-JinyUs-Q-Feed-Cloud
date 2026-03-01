@@ -1,7 +1,8 @@
 // ==========================================================================
-// Monitoring EC2 Alloy Configuration
+// Backend EC2 Alloy Configuration (Prod)
 // 1. Host metrics → Prometheus remote_write (push)
 // 2. Docker container logs → Loki push
+// Loki/Prometheus: Dev VPC monitoring EC2 (VPC peering)
 // ==========================================================================
 
 // --- Host Metrics ---
@@ -18,7 +19,7 @@ prometheus.scrape "host" {
 
 prometheus.remote_write "default" {
 	endpoint {
-		url = "http://prometheus:9090/api/v1/write"
+		url = "http://10.1.3.90:9090/api/v1/write"
 	}
 }
 
@@ -46,11 +47,11 @@ discovery.relabel "docker_logs" {
 	}
 	rule {
 		target_label = "environment"
-		replacement  = "dev"
+		replacement  = "prod"
 	}
 	rule {
 		target_label = "role"
-		replacement  = "monitoring"
+		replacement  = "backend"
 	}
 }
 
@@ -62,6 +63,6 @@ loki.source.docker "containers" {
 
 loki.write "default" {
 	endpoint {
-		url = "http://loki:3100/loki/api/v1/push"
+		url = "http://10.1.3.90:3100/loki/api/v1/push"
 	}
 }

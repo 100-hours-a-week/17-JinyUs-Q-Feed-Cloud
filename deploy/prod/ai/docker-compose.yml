@@ -1,15 +1,9 @@
 services:
-  backend:
-    image: ${ECR_REGISTRY}/qfeed-ecr-backend:${IMAGE_TAG}
+  ai:
+    image: ${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}
     network_mode: host
     env_file: .env
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
     logging:
       driver: json-file
       options:
