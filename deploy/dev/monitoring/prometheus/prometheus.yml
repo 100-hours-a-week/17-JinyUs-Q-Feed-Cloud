@@ -18,16 +18,6 @@ scrape_configs:
       - targets: ["localhost:9090"]
 
   # ---------------------------------------------------------
-  # Monitoring EC2 Alloy (host metrics, same Docker network)
-  # ---------------------------------------------------------
-  - job_name: "alloy-monitoring"
-    static_configs:
-      - targets: ["alloy:12345"]
-        labels:
-          environment: "dev"
-          role: "monitoring"
-
-  # ---------------------------------------------------------
   # Backend (Spring Boot Actuator + Micrometer)
   # ---------------------------------------------------------
   - job_name: "backend"
@@ -54,22 +44,6 @@ scrape_configs:
         filters:
           - name: tag:Role
             values: ["ai"]
-    relabel_configs:
-      - source_labels: [__meta_ec2_tag_Name]
-        target_label: instance
-      - source_labels: [__meta_ec2_tag_Environment]
-        target_label: environment
-
-  # ---------------------------------------------------------
-  # Alloy host metrics (Backend/AI EC2)
-  # ---------------------------------------------------------
-  - job_name: "alloy"
-    ec2_sd_configs:
-      - region: ap-northeast-2
-        port: 12345
-        filters:
-          - name: tag:Role
-            values: ["backend", "ai", "redis"]
     relabel_configs:
       - source_labels: [__meta_ec2_tag_Name]
         target_label: instance

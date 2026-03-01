@@ -1,8 +1,20 @@
 // ==========================================================================
 // Monitoring EC2 Alloy Configuration
+// Host metrics → Prometheus remote_write (push model)
 // ==========================================================================
 
 prometheus.exporter.unix "host" {
 	procfs_path = "/host/proc"
 	sysfs_path  = "/host/sys"
+}
+
+prometheus.scrape "host" {
+	targets    = prometheus.exporter.unix.host.targets
+	forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://prometheus:9090/api/v1/write"
+	}
 }
