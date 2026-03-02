@@ -32,9 +32,13 @@ chmod 600 "$ENV_FILE"
 echo ".env 파일 생성 완료"
 
 # --- EC2 Name 태그 조회 (Alloy instance 레이블용) ---
+IMDS_TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" \
+  http://169.254.169.254/latest/meta-data/instance-id)
 EC2_NAME=$(aws ec2 describe-tags \
   --region "$AWS_REGION" \
-  --filters "Name=resource-id,Values=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
+  --filters "Name=resource-id,Values=${INSTANCE_ID}" \
             "Name=key,Values=Name" \
   --query "Tags[0].Value" --output text)
 export EC2_NAME
