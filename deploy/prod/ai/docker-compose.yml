@@ -20,6 +20,8 @@ services:
     image: grafana/alloy:v1.13.2
     network_mode: host
     restart: unless-stopped
+    environment:
+      - EC2_NAME=${EC2_NAME}
     command:
       - "run"
       - "/etc/alloy/config.alloy"

@@ -3,6 +3,11 @@ services:
     image: ${ECR_REGISTRY}/qfeed-ecr-backend:${IMAGE_TAG}
     network_mode: host
     env_file: .env
+    environment:
+      - OTEL_TRACES_EXPORTER=none
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_SERVICE_NAME=qfeed-backend-dev
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
@@ -20,6 +25,8 @@ services:
     image: grafana/alloy:v1.13.2
     network_mode: host
     restart: unless-stopped
+    environment:
+      - EC2_NAME=${EC2_NAME}
     command:
       - "run"
       - "/etc/alloy/config.alloy"
