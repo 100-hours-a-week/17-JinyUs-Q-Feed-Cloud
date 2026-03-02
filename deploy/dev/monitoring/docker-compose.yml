@@ -14,7 +14,7 @@ services:
       - "--web.enable-lifecycle"
       - "--web.enable-remote-write-receiver"
     ports:
-      - "127.0.0.1:9090:9090"
+      - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -95,6 +95,7 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - monitoring
     depends_on:

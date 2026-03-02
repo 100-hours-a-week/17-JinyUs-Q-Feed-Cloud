@@ -1,7 +1,8 @@
 // ==========================================================================
-// Monitoring EC2 Alloy Configuration
+// Redis EC2 Alloy Configuration (Dev)
 // 1. Host metrics → Prometheus remote_write (push)
-// 2. Docker container logs → Loki push
+// 2. Redis Exporter metrics → Prometheus remote_write (push)
+// 3. Docker container logs → Loki push
 // ==========================================================================
 
 // --- Host Metrics ---
@@ -16,9 +17,18 @@ prometheus.scrape "host" {
 	forward_to = [prometheus.remote_write.default.receiver]
 }
 
+// --- Redis Exporter Metrics ---
+
+prometheus.scrape "redis_exporter" {
+	targets = [{
+		__address__ = "localhost:9121",
+	}]
+	forward_to = [prometheus.remote_write.default.receiver]
+}
+
 prometheus.remote_write "default" {
 	endpoint {
-		url = "http://prometheus:9090/api/v1/write"
+		url = "http://10.1.3.90:9090/api/v1/write"
 	}
 }
 
@@ -50,7 +60,7 @@ discovery.relabel "docker_logs" {
 	}
 	rule {
 		target_label = "role"
-		replacement  = "monitoring"
+		replacement  = "redis"
 	}
 }
 
@@ -62,6 +72,6 @@ loki.source.docker "containers" {
 
 loki.write "default" {
 	endpoint {
-		url = "http://loki:3100/loki/api/v1/push"
+		url = "http://10.1.3.90:3100/loki/api/v1/push"
 	}
 }
