@@ -17,6 +17,10 @@ prometheus.scrape "host" {
 }
 
 prometheus.remote_write "default" {
+	external_labels = {
+		environment = "dev",
+		role        = "monitoring",
+	}
 	endpoint {
 		url = "http://prometheus:9090/api/v1/write"
 	}

@@ -35,6 +35,10 @@ echo ".env 파일 생성 완료"
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" pull
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" up -d
 
+# --- Alloy 설정 반영 (bind-mount 변경은 up -d가 감지 못하므로 reload) ---
+curl -sf -X POST http://localhost:12345/-/reload && echo "Alloy config reloaded" \
+  || echo "WARN: Alloy reload 실패 (무시)" >&2
+
 # --- .env 파일 삭제 (보안) ---
 rm -f "$ENV_FILE"
 

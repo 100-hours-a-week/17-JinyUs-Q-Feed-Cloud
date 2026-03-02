@@ -26,6 +26,10 @@ echo "SSM 파라미터 조회 완료 (1개)"
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" pull
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" up -d
 
+# --- Alloy 설정 반영 (bind-mount 변경은 up -d가 감지 못하므로 reload) ---
+curl -sf -X POST http://localhost:12345/-/reload && echo "Alloy config reloaded" \
+  || echo "WARN: Alloy reload 실패 (무시)" >&2
+
 # --- 이전 이미지 정리 ---
 docker image prune -f
 
