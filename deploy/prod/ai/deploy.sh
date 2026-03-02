@@ -75,15 +75,15 @@ echo "배포 완료: ${ECR_REGISTRY}/qfeed-ecr-ai:${IMAGE_TAG}"
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps
 
 # --- 헬스체크 ---
-echo "헬스체크 대기 중 (최대 60초)..."
-for i in $(seq 1 6); do
+echo "헬스체크 대기 중 (최대 120초)..."
+for i in $(seq 1 12); do
   sleep 10
-  if docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps ai | grep -q "running"; then
-    echo "AI 컨테이너가 정상적으로 실행 중입니다."
+  if docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps ai | grep -q "healthy"; then
+    echo "✅ AI(prod) 컨테이너가 정상적으로 실행 중입니다."
     exit 0
   fi
   echo "  ... 대기 중 (${i}0초 경과)"
 done
-echo "AI 컨테이너 실행 실패 (60초 타임아웃)" >&2
+echo "❌ AI(prod) 컨테이너 실행 실패 (120초 타임아웃)" >&2
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" logs ai --tail 50
 exit 1

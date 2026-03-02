@@ -4,6 +4,12 @@ services:
     network_mode: host
     env_file: .env
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ai"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
     logging:
       driver: json-file
       options:
