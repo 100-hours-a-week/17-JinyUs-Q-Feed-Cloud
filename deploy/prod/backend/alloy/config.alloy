@@ -12,8 +12,20 @@ prometheus.exporter.unix "host" {
 	sysfs_path  = "/host/sys"
 }
 
-prometheus.scrape "host" {
+prometheus.scrape "node" {
 	targets    = prometheus.exporter.unix.host.targets
+	forward_to = [prometheus.relabel.set_labels.receiver]
+}
+
+prometheus.relabel "set_labels" {
+	rule {
+		target_label = "instance"
+		replacement  = env("EC2_NAME")
+	}
+	rule {
+		target_label = "job"
+		replacement  = "node"
+	}
 	forward_to = [prometheus.remote_write.default.receiver]
 }
 
@@ -41,10 +53,7 @@ discovery.relabel "docker_logs" {
 		regex         = "/(.*)"
 		target_label  = "container"
 	}
-	rule {
-		source_labels = ["__meta_docker_container_image"]
-		target_label  = "image"
-	}
+
 	rule {
 		target_label = "job"
 		replacement  = "docker-logs"
