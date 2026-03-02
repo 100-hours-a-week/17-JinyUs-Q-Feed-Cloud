@@ -28,6 +28,10 @@ prometheus.scrape "redis_exporter" {
 }
 
 prometheus.remote_write "default" {
+	external_labels = {
+		environment = "prod",
+		role        = "redis",
+	}
 	endpoint {
 		url = "http://10.1.3.90:9090/api/v1/write"
 	}
