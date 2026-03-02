@@ -78,7 +78,7 @@ docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps
 echo "헬스체크 대기 중 (최대 120초)..."
 for i in $(seq 1 12); do
   sleep 10
-  if docker compose -f "$COMPOSE_DIR/docker-compose.yml" ps ai | grep -q "healthy"; then
+  if curl -sf http://localhost:8000/ai > /dev/null 2>&1; then
     echo "✅ AI(dev) 컨테이너가 정상적으로 실행 중입니다."
     exit 0
   fi
