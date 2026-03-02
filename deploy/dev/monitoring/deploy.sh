@@ -22,6 +22,15 @@ GF_ADMIN_PASSWORD=$(get_ssm "GF_ADMIN_PASSWORD")
 export GF_ADMIN_PASSWORD
 echo "SSM 파라미터 조회 완료 (1개)"
 
+# --- EC2 Name 태그 조회 (Alloy instance 레이블용) ---
+EC2_NAME=$(aws ec2 describe-tags \
+  --region "$AWS_REGION" \
+  --filters "Name=resource-id,Values=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
+            "Name=key,Values=Name" \
+  --query "Tags[0].Value" --output text)
+export EC2_NAME
+echo "EC2 Name: ${EC2_NAME}"
+
 # --- 배포 ---
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" pull
 docker compose -f "$COMPOSE_DIR/docker-compose.yml" up -d

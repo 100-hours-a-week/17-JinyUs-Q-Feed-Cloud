@@ -49,6 +49,15 @@ EOF
 chmod 600 "$ENV_FILE"
 echo ".env 파일 생성 완료"
 
+# --- EC2 Name 태그 조회 (Alloy instance 레이블용) ---
+EC2_NAME=$(aws ec2 describe-tags \
+  --region "$AWS_REGION" \
+  --filters "Name=resource-id,Values=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
+            "Name=key,Values=Name" \
+  --query "Tags[0].Value" --output text)
+export EC2_NAME
+echo "EC2 Name: ${EC2_NAME}"
+
 # --- 기존 docker run 컨테이너 정리 (compose 전환 시 1회만) ---
 docker stop qfeed-ai 2>/dev/null || true
 docker rm qfeed-ai 2>/dev/null || true
