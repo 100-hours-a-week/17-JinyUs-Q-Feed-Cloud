@@ -100,11 +100,11 @@ prometheus.relabel "cadvisor_labels" {
         target_label = "job"
         replacement  = "cadvisor"
     }
-    rule {
-        source_labels = ["image"]
-        regex         = "^$"
-        action        = "drop"
-    }
+//    rule {
+//        source_labels = ["image"]
+//        regex         = "^$"
+//        action        = "drop"
+//    }
     forward_to = [prometheus.remote_write.default.receiver]
 }
 
