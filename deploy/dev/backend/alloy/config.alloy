@@ -81,7 +81,7 @@ loki.write "default" {
 
 prometheus.scrape "cadvisor" {
     targets = [{
-        __address__ = "localhost:8080",
+        __address__ = "localhost:8082",
     }]
     scrape_interval = "10s"
     forward_to      = [prometheus.relabel.cadvisor_labels.receiver]
