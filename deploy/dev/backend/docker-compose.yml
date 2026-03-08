@@ -32,7 +32,7 @@ services:
       - /sys:/sys:ro
       - /dev/disk/:/dev/disk:ro
     command:
-      - "--port=8080"
+      - "--port=8082"
     logging:
       driver: json-file
       options:
