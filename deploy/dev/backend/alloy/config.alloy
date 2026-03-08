@@ -79,14 +79,10 @@ loki.write "default" {
 	}
 }
 
-prometheus.exporter.cadvisor "containers" {
-    docker_host      = "unix:///var/run/docker.sock"
-    storage_duration = "5m"
-    docker_only      = true
-}
-
 prometheus.scrape "cadvisor" {
-    targets         = prometheus.exporter.cadvisor.containers.targets
+    targets = [{
+        __address__ = "localhost:8080",
+    }]
     scrape_interval = "10s"
     forward_to      = [prometheus.relabel.cadvisor_labels.receiver]
 }
@@ -100,11 +96,6 @@ prometheus.relabel "cadvisor_labels" {
         target_label = "job"
         replacement  = "cadvisor"
     }
-//    rule {
-//        source_labels = ["image"]
-//        regex         = "^$"
-//        action        = "drop"
-//    }
     forward_to = [prometheus.remote_write.default.receiver]
 }
 
