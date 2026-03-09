@@ -100,6 +100,9 @@ docker load < qfeed-ai.tar.gz
 echo "기존 컨테이너 정리..."
 docker compose down 2>/dev/null || true
 
+echo "미사용 이미지 정리..."
+docker image prune -f
+
 echo "컨테이너 시작..."
 docker compose up -d
 
