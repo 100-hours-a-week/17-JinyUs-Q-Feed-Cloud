@@ -2,7 +2,9 @@
 .claude/
 
 # Secrets
-.env*
+.env
+.env.*
+!.env.example
 
 # Terraform
 *.tfstate
