@@ -219,6 +219,7 @@ DB에 테이블이 없어서 발생합니다. 이 docker-compose 환경은 빈 P
 - `.env`에 `SPRING_JPA_HIBERNATE_DDL_AUTO=create` 추가 (Hibernate 자동 생성)
 - Flyway/Liquibase 마이그레이션 스크립트를 포함한 이미지 사용
 - 초기 스키마 SQL을 수동으로 실행
+- 기존 DB의 dump 파일(`pg_dump`)을 EC2로 전송 후 `docker compose exec -T db psql` 로 복원
 
 ### 6) AI가 `ENVIRONMENT` validation 에러
 
@@ -230,8 +231,6 @@ ENVIRONMENT=dev   # prod, dev, local 중 택 1
 ```
 
 ### 7) 컨테이너가 뜨지 않을 때
-
-### 5) 컨테이너가 뜨지 않을 때
 
 ```bash
 ssh -i ~/.ssh/qfeed-keypair-2.pem ubuntu@3.39.252.127
