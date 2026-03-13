@@ -1,5 +1,6 @@
 import asyncio
 import time
+import json
 import random
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
@@ -24,7 +25,40 @@ async def health():
 
 @app.post("/v1/chat/completions")
 async def mock_vllm(request: Request):
+    body = await request.json()
     await asyncio.sleep(llm_delay())
+
+    # structured_outputs의 properties를 보고 분기
+    schema = body.get("structured_outputs", {}).get("json", {})
+    props = set(schema.get("properties", {}).keys())
+
+    # feedback_generator → OverallFeedback
+    if {"strengths", "improvements"}.issubset(props):
+        content = json.dumps({
+            "strengths": "핵심 개념을 명확하게 설명했으며 비교 분석이 논리적이었습니다.",
+            "improvements": "구체적인 예시를 추가하면 더 설득력 있는 답변이 될 것입니다."
+        })
+
+    # rubric_evaluator → RubricEvaluationResult
+    elif {"accuracy", "logic", "specificity", "completeness", "delivery"}.issubset(props):
+        content = json.dumps({
+            "accuracy": 4,
+            "logic": 3,
+            "specificity": 3,
+            "completeness": 4,
+            "delivery": 4
+        })
+
+    # question_router / follow_up_generator → 기타
+    else:
+        content = json.dumps({
+            "decision": "new_topic",
+            "reasoning": "mock",
+            "question_text": "스레드와 프로세스의 컨텍스트 스위칭 차이를 설명해주세요.",
+            "category": "OS",
+            "cushion_text": "좋습니다, 다음 질문입니다."
+        })
+
     return {
         "id": "mock-vllm-001",
         "object": "chat.completion",
@@ -32,23 +66,10 @@ async def mock_vllm(request: Request):
         "model": "mock-vllm",
         "choices": [{
             "index": 0,
-            "message": {
-                "role": "assistant",
-                "content": (
-                    '{"accuracy":4,"logic":3,"specificity":3,'
-                    '"completeness":4,"delivery":4,'
-                    '"decision":"follow_up","reasoning":"mock",'
-                    '"question_text":"mock question","category":"OS",'
-                    '"cushion_text":"mock cushion"}'
-                )
-            },
+            "message": {"role": "assistant", "content": content},
             "finish_reason": "stop"
         }],
-        "usage": {
-            "prompt_tokens": 150,
-            "completion_tokens": 60,
-            "total_tokens": 210
-        }
+        "usage": {"prompt_tokens": 150, "completion_tokens": 60, "total_tokens": 210}
     }
 
 
