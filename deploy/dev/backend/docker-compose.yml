@@ -4,10 +4,13 @@ services:
     network_mode: host
     env_file: .env
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx768m -Xms384m
       - OTEL_TRACES_EXPORTER=none
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
       - OTEL_SERVICE_NAME=qfeed-backend-dev
+    mem_limit: 1400m
+    memswap_limit: 1400m
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
@@ -45,6 +48,8 @@ services:
   alloy:
     image: grafana/alloy:v1.13.2
     network_mode: host
+    mem_limit: 100m
+    memswap_limit: 100m
     restart: unless-stopped
     environment:
       - EC2_NAME=${EC2_NAME}
