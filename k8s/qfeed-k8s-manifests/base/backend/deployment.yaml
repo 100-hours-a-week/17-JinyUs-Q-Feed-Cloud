@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qfeed-backend-k8s
+  labels:
+    app: qfeed-backend-k8s
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: qfeed-backend-k8s
+  template:
+    metadata:
+      labels:
+        app: qfeed-backend-k8s
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: qfeed-backend-k8s
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: qfeed-backend-k8s
+      containers:
+        - name: backend
+          image: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-backend:latest
+          envFrom:
+            - secretRef:
+                name: qfeed-backend-k8s-secret
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits: {}
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 20
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+          securityContext:
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 40
