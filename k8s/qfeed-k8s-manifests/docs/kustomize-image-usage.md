@@ -8,7 +8,7 @@
    ```
 2. 이미지 태그 설정:
    ```bash
-   kustomize edit set image 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-backend:NEW_TAG
+   kustomize edit set image 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ecr-backend:NEW_TAG
    ```
 3. 적용:
    ```bash

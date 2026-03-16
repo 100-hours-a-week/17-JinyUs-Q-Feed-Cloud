@@ -7,5 +7,5 @@ resources:
   - ../../../base/backend
 
 images:
-  - name: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-backend
-    newTag: "v1.0.0"
+  - name: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ecr-backend
+    newTag: "dd84e4d"

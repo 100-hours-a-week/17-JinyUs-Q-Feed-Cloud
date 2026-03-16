@@ -19,6 +19,8 @@ spec:
       labels:
         app: qfeed-backend-k8s
     spec:
+      imagePullSecrets:
+        - name: qfeed-backend-ecr-pull-secret
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -42,7 +44,7 @@ spec:
               app: qfeed-backend-k8s
       containers:
         - name: backend
-          image: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-backend:latest
+          image: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ecr-backend:latest
           envFrom:
             - secretRef:
                 name: qfeed-backend-k8s-secret
