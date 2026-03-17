@@ -7,5 +7,5 @@ resources:
   - ../../../base/ai
 
 images:
-  - name: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ai
+  - name: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ecr-ai
     newTag: "bc6c76f"

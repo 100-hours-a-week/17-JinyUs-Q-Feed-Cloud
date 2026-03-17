@@ -44,10 +44,36 @@ spec:
               app: qfeed-ai-k8s
       containers:
         - name: ai
-          image: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ai:latest
+          image: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ecr-ai:latest
           envFrom:
             - secretRef:
                 name: qfeed-ai-k8s-secret
+          env:
+            - name: HUGGINGFACE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qfeed-ai-k8s-secret
+                  key: huggingface-api-key
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qfeed-ai-k8s-secret
+                  key: gemini-api-key
+            - name: ELEVENLABS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qfeed-ai-k8s-secret
+                  key: elevenlabs-api-key
+            - name: LANGFUSE_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qfeed-ai-k8s-secret
+                  key: langfuse-public-key
+            - name: LANGFUSE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qfeed-ai-k8s-secret
+                  key: langfuse-secret-key
           resources:
             requests:
               cpu: 250m
@@ -55,13 +81,13 @@ spec:
             limits: {}
           startupProbe:
             httpGet:
-              path: /ai/health/readiness
+              path: /ai
               port: 8000
             failureThreshold: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /ai/health/readiness
+              path: /ai
               port: 8000
           livenessProbe:
             httpGet:
