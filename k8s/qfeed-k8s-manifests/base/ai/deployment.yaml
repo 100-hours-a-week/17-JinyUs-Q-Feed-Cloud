@@ -19,6 +19,8 @@ spec:
       labels:
         app: qfeed-ai-k8s
     spec:
+      imagePullSecrets:
+        - name: qfeed-ai-ecr-pull-secret
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -43,6 +45,9 @@ spec:
       containers:
         - name: ai
           image: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ai:latest
+          envFrom:
+            - secretRef:
+                name: qfeed-ai-k8s-secret
           resources:
             requests:
               cpu: 250m
@@ -67,5 +72,6 @@ spec:
               exec:
                 command: ["/bin/sh", "-c", "sleep 5"]
           securityContext:
+            readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
       terminationGracePeriodSeconds: 40
