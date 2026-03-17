@@ -54,20 +54,17 @@ spec:
               memory: 512Mi
             limits: {}
           startupProbe:
-            httpGet:
-              path: /actuator/health/readiness
+            tcpSocket:
               port: 8080
             failureThreshold: 20
             periodSeconds: 3
           readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
+            tcpSocket:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
+            tcpSocket:
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
