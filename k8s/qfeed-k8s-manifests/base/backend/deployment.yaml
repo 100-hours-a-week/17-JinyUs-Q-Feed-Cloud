@@ -48,6 +48,16 @@ spec:
           envFrom:
             - secretRef:
                 name: qfeed-backend-k8s-secret
+          # OTEL: Secret/JVM agent와 무관하게 export 비활성화 (localhost:4318 등 미연결 collector 스팸 방지)
+          env:
+            - name: OTEL_SDK_DISABLED
+              value: "true"
+            - name: OTEL_TRACES_EXPORTER
+              value: "none"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
           resources:
             requests:
               cpu: 250m
