@@ -11,3 +11,7 @@
 *.tfstate.*
 *.tfvars
 .terraform/
+
+# Load Testing
+results/
+__pycache__/
