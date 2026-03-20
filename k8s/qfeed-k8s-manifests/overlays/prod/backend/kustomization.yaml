@@ -8,4 +8,4 @@ resources:
 
 images:
   - name: 092399857215.dkr.ecr.ap-northeast-2.amazonaws.com/qfeed-ecr-backend
-    newTag: "dd84e4d"
+    newTag: "9da7c33"
