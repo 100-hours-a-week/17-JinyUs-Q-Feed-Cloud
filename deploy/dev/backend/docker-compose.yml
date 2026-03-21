@@ -50,8 +50,8 @@ services:
   alloy:
     image: grafana/alloy:v1.13.2
     network_mode: host
-    mem_limit: 100m
-    memswap_limit: 100m
+    mem_limit: 150m
+    memswap_limit: 150m
     restart: unless-stopped
     environment:
       - EC2_NAME=${EC2_NAME}
