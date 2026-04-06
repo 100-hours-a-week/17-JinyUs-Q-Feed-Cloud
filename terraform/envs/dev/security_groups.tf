@@ -70,6 +70,33 @@ resource "aws_security_group" "ai" {
 }
 
 # -----------------------------------------------------------------------------
+# MongoDB for AI Security Group
+# -----------------------------------------------------------------------------
+
+resource "aws_security_group" "mongodb_ai" {
+  name        = "qfeed-dev-sg-mongodb-ai"
+  description = "MongoDB-AI EC2 - allow 27017 - 27019 from AI SG and self"
+  vpc_id      = data.aws_vpc.dev.id
+
+  ingress {
+    description     = "MongoDB from AI(FastAPI)"
+    from_port       = 27017
+    to_port         = 27019
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ai.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(local.common_tags, { Name = "qfeed-dev-sg-mongodb-ai" })
+}
+
+# -----------------------------------------------------------------------------
 # RDS Security Group
 # -----------------------------------------------------------------------------
 

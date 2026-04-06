@@ -524,3 +524,61 @@ resource "aws_iam_role_policy" "github_actions_s3" {
   })
 }
 
+# =============================================================================
+# MongoDB-AI EC2 IAM Role
+# =============================================================================
+
+resource "aws_iam_role" "ec2_mongodb_ai" {
+  name = "qfeed-dev-role-ec2-mongodb-ai"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = merge(local.common_tags, {
+    Name = "qfeed-dev-role-ec2-mongodb-ai"
+  })
+}
+
+resource "aws_iam_role_policy" "mongodb_ssm_params" {
+  name = "qfeed-dev-policy-mongodb-ssm"
+  role = aws_iam_role.ec2_mongodb_ai.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath"
+        ]
+        Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/qfeed/dev/mongo/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "mongodb_ai_ssm_managed" {
+  role       = aws_iam_role.ec2_mongodb_ai.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_mongodb_ai" {
+  name = "qfeed-dev-profile-ec2-mongodb-ai"
+  role = aws_iam_role.ec2_mongodb_ai.name
+
+  tags = merge(local.common_tags, {
+    Name = "qfeed-dev-profile-ec2-mongodb-ai"
+  })
+}
